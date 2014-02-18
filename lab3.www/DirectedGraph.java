@@ -21,7 +21,8 @@ public class DirectedGraph<E extends Edge> {
 	public Iterator<E> shortestPath(int from, int to) {
 		return null;
 	}
-
+	
+//TODO: Javadocka mig.
 	public Iterator<E> minimumSpanningTree() {
 		int[] nodes = new int[noOfNodes];
 		for (int i = 0; i < noOfNodes; i++) {
@@ -31,38 +32,28 @@ public class DirectedGraph<E extends Edge> {
 		ArrayList<E> mst = new ArrayList<>();
 		
 		//Go through edges.
-		/*
-		 * This will go on until nodes[src]==nodes[goal] or both are negative values. 
-		 * if goal != src, 
-		 */
 		while (it.hasNext()){
 			E edge = it.next();
-			int src = edge.from, goal = edge.to;
-			
+			int src = edge.from, goal = edge.to;			
 			while(nodes[src] >= 0 || nodes[goal] >= 0){
-				if (nodes[src] > nodes[goal]){
-					src = nodes[src];
-				} else if (nodes[goal] > nodes[src]){
-					goal = nodes[goal];
-				} else {
+				if (src == goal) {
 					break;
-				}
-				System.out.println(edge.to);
-				System.out.println("nu du knut.");
+				} else if (nodes[src] > nodes[goal]){
+					src = nodes[src];
+				} else {
+					goal = nodes[goal];
+				} 
 			}
-			
 			//Adding an edge to system. 
 			if (src != goal){
 				mst.add(edge);
-				nodes[edge.from] = edge.to;	//Adding edge in nodes[].
-				if(src < goal){
+				if(src < goal){							
 					nodes[src] += nodes[goal];
-					//nodes[goal] = src; 			//Not here since no real edge here.
+					nodes[goal] = src; 			
 				} else {
 					nodes[goal] += nodes[src];
-					// nodes[src] = goal; 		//Not here since no real edge here.
+					nodes[src] = goal; 		
 				}
-				
 				if (mst.size() == noOfNodes-1){
 					return mst.iterator();
 				}
