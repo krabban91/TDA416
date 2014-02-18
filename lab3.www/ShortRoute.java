@@ -54,14 +54,14 @@ public class ShortRoute extends JFrame implements ActionListener {
 		// try to convert to UTF-8 across plattforms to make Swedish chars work
 		//System.out.println("charset = " + java.nio.charset.Charset.defaultCharset()); 
 		// MacRoman macintosh  Windows-1252 ISO 8859-1 UTF-8 
-		try {
+//		try {
 			// convert whatever this file is encoded in to UTF-8, 
 			// kill the exception (can't happen)
-			introText    = new String(introText.getBytes(java.nio.charset.Charset.defaultCharset().toString()), "UTF-8");
-			felTextStart = new String(felTextStart.getBytes(java.nio.charset.Charset.defaultCharset().toString()), "UTF-8");
-			felTextSlut  = new String(felTextSlut.getBytes(java.nio.charset.Charset.defaultCharset().toString()), "UTF-8");
-			frome        = new String(frome.getBytes(java.nio.charset.Charset.defaultCharset().toString()), "UTF-8");
-		} catch (UnsupportedEncodingException e) {System.exit(0);}
+//			introText    = new String(introText.getBytes(java.nio.charset.Charset.defaultCharset().toString()), "UTF-8");
+//			felTextStart = new String(felTextStart.getBytes(java.nio.charset.Charset.defaultCharset().toString()), "UTF-8");
+//			felTextSlut  = new String(felTextSlut.getBytes(java.nio.charset.Charset.defaultCharset().toString()), "UTF-8");
+//			frome        = new String(frome.getBytes(java.nio.charset.Charset.defaultCharset().toString()), "UTF-8");
+//		} catch (UnsupportedEncodingException e) {System.exit(0);}
 
 		// read the graph and draw it in a separate window
 		// creates the graph and fills the p-queue "names"
