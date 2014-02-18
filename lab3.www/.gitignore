@@ -13,3 +13,4 @@
 /ShortRoute.class
 /CompKruskalEdge.class
 /ComparableDijkstraPath.class
+/DirectedGraph$EdgeComparator.class
