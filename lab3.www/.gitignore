@@ -11,3 +11,5 @@
 /NodeObject.class
 /NodeTable.class
 /ShortRoute.class
+/CompKruskalEdge.class
+/ComparableDijkstraPath.class
