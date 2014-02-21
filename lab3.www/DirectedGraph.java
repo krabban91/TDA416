@@ -4,11 +4,12 @@ public class DirectedGraph<E extends Edge> {
 
 	private int noOfNodes;
 	private PriorityQueue<E> allEdges;
+    private ComparableDijkstraPath[] Dpath;
 
 	public DirectedGraph(int noOfNodes) {
 		this.noOfNodes =noOfNodes;
-		
-		allEdges = new PriorityQueue<>(1, new EdgeComparator());
+        Dpath = new ComparableDijkstraPath[noOfNodes];
+		allEdges = new PriorityQueue<E>(1, new EdgeComparator());
 	}
 
 	public void addEdge(E e) {
@@ -17,10 +18,61 @@ public class DirectedGraph<E extends Edge> {
 		if (!allEdges.contains(e))
 			allEdges.add(e);
 	}
+    private ComparableDijkstraPath calculate(int i, ComparableDijkstraPath path){
+        if(Dpath[i] == null){
+            Dpath[i] = new ComparableDijkstraPath();
+        }
+        //
+        //Find edges of i, see of Dpath[edges.to]==null, calculate
+        //If node has path to end, return cost
+        //Else return min of paths from (calculate+cost)s
+
+        return null;
+    }
 
 	public Iterator<E> shortestPath(int from, int to) {
-		return null;
+        Dpath[to] = new ComparableDijkstraPath();
+        for (int i = 0; i < noOfNodes;i++){
+            Dpath[i] = calculate(i, Dpath[i]);
+        }
+
+
+
+        //Producera nodlista som är nåbar
+        //init av fastestpathcost[] och path[]
+        // pathfrom
+
+        //funcsp(){
+        //}
+        // get path of from, , , , to./*
+
+        //jmf fp[något] och cost+fp[annat]
+        //lagra p[snabbast]
+
+        //return p[from].iterator()
+        /*
+          * EL lista för noder.
+              fastestpathstoto[]
+          *   index = from
+          *   fptt[from] ... fptt[from] - ==from.fptt[new]
+          */
+
+        return null;
 	}
+    //int[]jensa =
+    //int[]
+    private double sp(int from, int to){
+        //jensa[from] = min(indcsandajskdas, djdljdsakl)
+        /*
+
+            if(jensa[from] > costof(b) + jensa[b])
+                jensa[from] = costof(b)+jensa[b];
+                path[from]=b;
+         */
+
+        return 0;
+    }
+
 	
 //TODO: Javadocka mig.
 	public Iterator<E> minimumSpanningTree() {
@@ -29,7 +81,7 @@ public class DirectedGraph<E extends Edge> {
 			nodes[i] = -1;
 		}
 		Iterator<E> it = allEdges.iterator();
-		ArrayList<E> mst = new ArrayList<>();
+		ArrayList<E> mst = new ArrayList<E>();
 		
 		//Go through edges.
 		while (it.hasNext()){
