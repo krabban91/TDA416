@@ -1,14 +1,15 @@
 import java.util.*;
 
 public class DirectedGraph<E extends Edge> {
-
+    int calls= 0;
 	private int noOfNodes;
 	private PriorityQueue<E> allEdges;
-    private ComparableDijkstraPath[] Dpath;
+
+    //private ComparableDijkstraPath[] Dpath;
 
 	public DirectedGraph(int noOfNodes) {
 		this.noOfNodes =noOfNodes;
-        Dpath = new ComparableDijkstraPath[noOfNodes];
+       // Dpath = new ComparableDijkstraPath[noOfNodes];
 		allEdges = new PriorityQueue<E>(1, new EdgeComparator());
 	}
 
@@ -18,59 +19,40 @@ public class DirectedGraph<E extends Edge> {
 		if (!allEdges.contains(e))
 			allEdges.add(e);
 	}
-    private ComparableDijkstraPath calculate(int i, ComparableDijkstraPath path){
-        if(Dpath[i] == null){
-            Dpath[i] = new ComparableDijkstraPath();
-        }
-        //
-        //Find edges of i, see of Dpath[edges.to]==null, calculate
-        //If node has path to end, return cost
-        //Else return min of paths from (calculate+cost)s
 
-        return null;
-    }
-
+    //TODO: JAVADOCKA MIG DÅ!
 	public Iterator<E> shortestPath(int from, int to) {
-        Dpath[to] = new ComparableDijkstraPath();
-        for (int i = 0; i < noOfNodes;i++){
-            Dpath[i] = calculate(i, Dpath[i]);
+        if (from <0 || to <0 || from >= noOfNodes || to >= noOfNodes){ return null; }
+        LinkedList<Edge>[] EL = new LinkedList[noOfNodes];
+        ComparableDijkstraPath[] paths = new ComparableDijkstraPath[noOfNodes];
+        for (int i = 0; i <noOfNodes; i++){
+            EL[i] = new LinkedList<Edge>();
+            for(Edge e : allEdges){
+                if(e.from == i){
+                    EL[i].add(e);
+                } //TODO: Effektivisera mig.
+            }
         }
-
-
-
-        //Producera nodlista som är nåbar
-        //init av fastestpathcost[] och path[]
-        // pathfrom
-
-        //funcsp(){
-        //}
-        // get path of from, , , , to./*
-
-        //jmf fp[något] och cost+fp[annat]
-        //lagra p[snabbast]
-
-        //return p[from].iterator()
-        /*
-          * EL lista för noder.
-              fastestpathstoto[]
-          *   index = from
-          *   fptt[from] ... fptt[from] - ==from.fptt[new]
-          */
-
-        return null;
-	}
-    //int[]jensa =
-    //int[]
-    private double sp(int from, int to){
-        //jensa[from] = min(indcsandajskdas, djdljdsakl)
-        /*
-
-            if(jensa[from] > costof(b) + jensa[b])
-                jensa[from] = costof(b)+jensa[b];
-                path[from]=b;
-         */
-
-        return 0;
+        //goal position, cost = 0.
+        paths[to] = new ComparableDijkstraPath(0);
+        paths = sp(from, to, paths, EL);
+        return paths[from].iterator();
+   	}
+    //TODO: DOCKA MIG! (köt eller?)
+    private ComparableDijkstraPath[] sp(int from, int to, ComparableDijkstraPath[] paths, LinkedList<Edge>[] EL){
+        if(paths[from] == null){
+            paths[from] = new ComparableDijkstraPath();
+        }
+        for (Edge e : EL[from]){
+            if(paths[e.to] == null){
+                paths = sp(e.to, to, paths, EL);
+            }
+            if (paths[from].totalWeight > e.getWeight() + paths[e.to].totalWeight){
+                paths[from] = new ComparableDijkstraPath(paths[e.to]);
+                paths[from].addEdge(e);
+            }
+        }
+        return paths;
     }
 
 	

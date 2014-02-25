@@ -1,21 +1,26 @@
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 
-public class ComparableDijkstraPath implements Comparable<Object>{
+public class ComparableDijkstraPath<E extends Edge> implements Comparable<Object>{
     protected double totalWeight;
-    protected LinkedList<Edge> path;
+    protected LinkedList<E> path;
 
     public ComparableDijkstraPath(){
-        totalWeight = 0;
-        path = new LinkedList<Edge>();
+        totalWeight = 10000000; //TODO: find a good random value.
+        path = new LinkedList<E>();
+    }
+    public ComparableDijkstraPath(int weight){
+        totalWeight = weight;
+        path = new LinkedList<E>();
     }
 
     public ComparableDijkstraPath(ComparableDijkstraPath clone){
         this.totalWeight = clone.totalWeight;
-        this.path = (LinkedList<Edge>)clone.path.clone();
+        this.path = (LinkedList<E>)clone.path.clone();
     }
 
-    public void addEdge(Edge e){
+    public void addEdge(E e){
         totalWeight += e.getWeight();
         path.add(e);
     }
@@ -32,5 +37,8 @@ public class ComparableDijkstraPath implements Comparable<Object>{
             }
         }
         return 0;
+    }
+    public Iterator<E> iterator(){
+        return path.iterator();
     }
 }
