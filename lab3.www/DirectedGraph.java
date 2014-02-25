@@ -1,62 +1,113 @@
 import java.util.*;
 
+/**
+ * Partly representing a graph. This class holds only edges of a graph.
+ * It can find shortest paths between node A and node B.
+ * It can find the minimal spanning tree of a graph.
+ *
+ * @author Group 21: Gabriel Andersson (911010-4131), Markus Pettersson (900326-4257)
+ * @version (140225)
+ */
 public class DirectedGraph<E extends Edge> {
-    int calls= 0;
+    /**
+     * a value to represent something near positive infinity.
+     */
+    public final double CLOSE_TO_INF = 1000000000;
+    // Number of nodes in graph
 	private int noOfNodes;
+    // Queue to quickly find the edges with smallest weight.
 	private PriorityQueue<E> allEdges;
+    // List holding edges. Each slot represents a node
+    private LinkedList<Edge>[] nodeEdges;
 
-    //private ComparableDijkstraPath[] Dpath;
-
+    /**
+     * Creates a DirectedGraph
+     * @param noOfNodes the amount of nodes in the graph
+     */
 	public DirectedGraph(int noOfNodes) {
-		this.noOfNodes =noOfNodes;
-       // Dpath = new ComparableDijkstraPath[noOfNodes];
+		this.noOfNodes = noOfNodes;
 		allEdges = new PriorityQueue<E>(1, new EdgeComparator());
+        nodeEdges = new LinkedList[noOfNodes];
 	}
 
+    /**
+     * Adding an edge makes it considerable in this DirectedGraph
+     *
+     * @param e edge to add to the DirectedGraph. if <tt>e</tt> is invalid or null it will not be added.
+     */
 	public void addEdge(E e) {
-		if (e == null)
+		if (e == null || e.from < 0 || e.to < 0 || e.from >= noOfNodes || e.to >= noOfNodes){
 			return;
-		if (!allEdges.contains(e))
-			allEdges.add(e);
+        }
+        if (!allEdges.contains(e)){
+                allEdges.add(e);
+                if(nodeEdges[e.from] == null){
+                    nodeEdges[e.from] = new LinkedList<Edge>();
+                }
+                nodeEdges[e.from].add(e);
+            }
 	}
 
-    //TODO: JAVADOCKA MIG DÅ!
+    /**
+     * Expects graph to be complete.
+     * If there is a path between the two nodes, this method will return the shortest one.
+     *
+     * @param from the node to travel from
+     * @param to the node to reach as fast as possible
+     * @return Iterator with all edges that represent the shortest path.
+     * returns <tt>null</tt> if no path shorter than <tt>CLOSE_TO_INF</tt> is found.
+     */
 	public Iterator<E> shortestPath(int from, int to) {
-        if (from <0 || to <0 || from >= noOfNodes || to >= noOfNodes){ return null; }
-        LinkedList<Edge>[] EL = new LinkedList[noOfNodes];
-        ComparableDijkstraPath[] paths = new ComparableDijkstraPath[noOfNodes];
-        for (int i = 0; i <noOfNodes; i++){
-            EL[i] = new LinkedList<Edge>();
-            for(Edge e : allEdges){
-                if(e.from == i){
-                    EL[i].add(e);
-                } //TODO: Effektivisera mig.
-            }
-        }
+        //parameter check
+        if (from < 0 || to < 0 || from >= noOfNodes || to >= noOfNodes){ return null; }
+        DijkstraPath[] paths = new DijkstraPath[noOfNodes];
         //goal position, cost = 0.
-        paths[to] = new ComparableDijkstraPath(0);
-        paths = sp(from, to, paths, EL);
-        return paths[from].iterator();
-   	}
-    //TODO: DOCKA MIG! (köt eller?)
-    private ComparableDijkstraPath[] sp(int from, int to, ComparableDijkstraPath[] paths, LinkedList<Edge>[] EL){
-        if(paths[from] == null){
-            paths[from] = new ComparableDijkstraPath();
+        paths[to] = new DijkstraPath();
+        //Initiate recursion
+        paths = sp(from, paths);
+        //If no path is found, return null. Different from path between A to A.
+        if (paths[from].getTotalWeight() < CLOSE_TO_INF){
+            return paths[from].iterator();
         }
-        for (Edge e : EL[from]){
+        return null;
+   	}
+
+    /*
+     * Recursive help function.
+     *
+     * @return the updated set of paths.
+     */
+    private DijkstraPath[] sp(int from, DijkstraPath[] paths){
+        // Initiate path from here.
+        if(paths[from] == null){
+            paths[from] = new DijkstraPath(CLOSE_TO_INF);
+        }
+        // All edges from this node.
+        for (Edge e : nodeEdges[from]){
+            //recursion call if not already made.
             if(paths[e.to] == null){
-                paths = sp(e.to, to, paths, EL);
+                paths = sp(e.to, paths);
             }
-            if (paths[from].totalWeight > e.getWeight() + paths[e.to].totalWeight){
-                paths[from] = new ComparableDijkstraPath(paths[e.to]);
+            // If new path is better, pick that one.
+            if (paths[from].getTotalWeight() > e.getWeight() + paths[e.to].getTotalWeight()){
+                paths[from] = new DijkstraPath();
+                //Add edges in correct order.
                 paths[from].addEdge(e);
+                Iterator it = paths[e.to].iterator();
+                while(it.hasNext()){
+                    paths[from].addEdge((E)it.next());
+                }
             }
         }
         return paths;
     }
 
-	
-//TODO: Javadocka mig.
+
+    /**
+     *  Creates a Minimal Spanning Tree of graph.
+     *
+     * @return An Iterator with the MST of the graph. Returns <tt>null</tt> if no complete MST can be found.
+     */
 	public Iterator<E> minimumSpanningTree() {
 		int[] nodes = new int[noOfNodes];
 		for (int i = 0; i < noOfNodes; i++) {
@@ -89,16 +140,22 @@ public class DirectedGraph<E extends Edge> {
 					nodes[src] = goal; 		
 				}
 				if (mst.size() == noOfNodes-1){
-					return mst.iterator();
+					break;
 				}
 			}
 		}
-		//There is no mst.
+        //Check to see if there is more than one tree.
+        if(nodes[0] == -1 * noOfNodes){
+            return mst.iterator();
+        }
 		return null;
 	}
 
+    /*
+     * Comparator used to order priority queue in order of edge weight.
+     *
+     */
 	private class EdgeComparator implements Comparator<E> {
-
 		@Override
 		public int compare(E o1, E o2) {
 			double val1 = o1.getWeight(), val2 = o2.getWeight();
