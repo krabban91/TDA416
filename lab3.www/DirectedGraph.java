@@ -14,39 +14,39 @@ public class DirectedGraph<E extends Edge> {
      */
     public final double CLOSE_TO_INF = 1000000000;
     // Number of nodes in graph
-	private int noOfNodes;
+    private int noOfNodes;
     // Queue to quickly find the edges with smallest weight.
-	private PriorityQueue<E> allEdges;
+    private PriorityQueue<E> allEdges;
     // List holding edges. Each slot represents a node
-    private LinkedList<Edge>[] nodeEdges;
+    private LinkedList<E>[] nodeEdges;
 
     /**
      * Creates a DirectedGraph
      * @param noOfNodes the amount of nodes in the graph
      */
-	public DirectedGraph(int noOfNodes) {
-		this.noOfNodes = noOfNodes;
-		allEdges = new PriorityQueue<E>(1, new EdgeComparator());
+    public DirectedGraph(int noOfNodes) {
+        this.noOfNodes = noOfNodes;
+        allEdges = new PriorityQueue<E>(1, new EdgeComparator());
         nodeEdges = new LinkedList[noOfNodes];
-	}
+    }
 
     /**
      * Adding an edge makes it considerable in this DirectedGraph
      *
      * @param e edge to add to the DirectedGraph. if <tt>e</tt> is invalid or null it will not be added.
+     * @throws java.lang.IllegalArgumentException if integers are outside noOfNodes and 0.
      */
-	public void addEdge(E e) {
-		if (e == null || e.from < 0 || e.to < 0 || e.from >= noOfNodes || e.to >= noOfNodes){
-			return;
+    public void addEdge(E e) throws IllegalArgumentException{
+        if (e == null || e.from < 0 || e.to < 0 || e.from >= noOfNodes || e.to >= noOfNodes){
+            throw new IllegalArgumentException("Nodes are not in graph.");
         }
-        if (!allEdges.contains(e)){
-                allEdges.add(e);
-                if(nodeEdges[e.from] == null){
-                    nodeEdges[e.from] = new LinkedList<Edge>();
-                }
-                nodeEdges[e.from].add(e);
-            }
-	}
+        allEdges.add(e);
+        if(nodeEdges[e.from] == null){
+            nodeEdges[e.from] = new LinkedList<E>();
+        }
+        nodeEdges[e.from].add(e);
+
+    }
 
     /**
      * Expects graph to be complete.
@@ -56,10 +56,14 @@ public class DirectedGraph<E extends Edge> {
      * @param to the node to reach as fast as possible
      * @return Iterator with all edges that represent the shortest path.
      * returns <tt>null</tt> if no path shorter than <tt>CLOSE_TO_INF</tt> is found.
+     * @throws java.lang.IllegalArgumentException if integers are outside noOfNodes and 0.
      */
-	public Iterator<E> shortestPath(int from, int to) {
+
+    public Iterator<E> shortestPath(int from, int to) throws IllegalArgumentException{
         //parameter check
-        if (from < 0 || to < 0 || from >= noOfNodes || to >= noOfNodes){ return null; }
+        if (from < 0 || to < 0 || from >= noOfNodes || to >= noOfNodes){
+            throw new IllegalArgumentException("Nodes are not in graph.");
+        }
         DijkstraPath[] paths = new DijkstraPath[noOfNodes];
         //goal position, cost = 0.
         paths[to] = new DijkstraPath();
@@ -70,7 +74,7 @@ public class DirectedGraph<E extends Edge> {
             return paths[from].iterator();
         }
         return null;
-   	}
+    }
 
     /*
      * Recursive help function.
@@ -108,61 +112,96 @@ public class DirectedGraph<E extends Edge> {
      *
      * @return An Iterator with the MST of the graph. Returns <tt>null</tt> if no complete MST can be found.
      */
-	public Iterator<E> minimumSpanningTree() {
-		int[] nodes = new int[noOfNodes];
-		for (int i = 0; i < noOfNodes; i++) {
-			nodes[i] = -1;
-		}
-		Iterator<E> it = allEdges.iterator();
-		ArrayList<E> mst = new ArrayList<E>();
-		
-		//Go through edges.
-		while (it.hasNext()){
-			E edge = it.next();
-			int src = edge.from, goal = edge.to;			
-			while(nodes[src] >= 0 || nodes[goal] >= 0){
-				if (src == goal) {
-					break;
-				} else if (nodes[src] > nodes[goal]){
-					src = nodes[src];
-				} else {
-					goal = nodes[goal];
-				} 
-			}
-			//Adding an edge to system. 
-			if (src != goal){
-				mst.add(edge);
-				if(src < goal){							
-					nodes[src] += nodes[goal];
-					nodes[goal] = src; 			
-				} else {
-					nodes[goal] += nodes[src];
-					nodes[src] = goal; 		
-				}
-				if (mst.size() == noOfNodes-1){
-					break;
-				}
-			}
-		}
+    public Iterator<E> minimumSpanningTree() {
+        LinkedList<E>[] cc = new LinkedList[noOfNodes];
+        PriorityQueue<E> pq = new PriorityQueue<E>(allEdges);
+        for ( int i = 0; i<noOfNodes; i++){
+            cc[i] = new LinkedList<E>();
+        }
+        E e;
+        //ALDRIG MER ITERATORER TILL PRIOKÖER.
+        while(pq.size()!=0){
+            e = pq.remove();
+            // not in same set.
+            if(cc[e.from] != cc[e.to]){
+                //no edges in "to"-set
+                if(cc[e.to].size() == 0){
+                    cc[e.to] = cc[e.from];
+                }else{//edges in "to"-set
+                    for (E it : cc[e.to]){
+                        //Move over edges and make sure nodes "belongs to same"
+                        cc[e.from].add(it);
+                        cc[it.from]=cc[e.from];
+                        cc[it.to]=cc[e.from];
+                    }
+                }
+                cc[e.from].add(e);
+            }
+        }
+        //Check if there is one tree.
+        if(cc[0].size() == noOfNodes - 1){
+            return cc[0].iterator();
+        }
+        return null;
+
+/*
+        This was the original method. We used the 4th method. This was wrong.
+
+        int[] nodes = new int[noOfNodes];
+        for (int i = 0; i < noOfNodes; i++) {
+            nodes[i] = -1;
+        }
+        PriorityQueue<E> pq = new PriorityQueue<E>(allEdges);
+        ArrayList<E> mst = new ArrayList<E>();
+
+        //Go through edges.
+        while (pq.size() > 0){
+            E edge = pq.remove();
+            int src = edge.from, goal = edge.to;
+            while(nodes[src] >= 0 || nodes[goal] >= 0){
+                if (src == goal) {
+                    break;
+                } else if (nodes[src] > nodes[goal]){
+                    src = nodes[src];
+                } else {
+                    goal = nodes[goal];
+                }
+            }
+            //Adding an edge to system.
+            if (src != goal){
+                mst.add(edge);
+                if(src < goal){
+                    nodes[src] += nodes[goal];
+                    nodes[goal] = src;
+                } else {
+                    nodes[goal] += nodes[src];
+                    nodes[src] = goal;
+                }
+                if (mst.size() == noOfNodes-1){
+                    break;
+                }
+            }
+        }
         //Check to see if there is more than one tree.
         if(nodes[0] == -1 * noOfNodes){
             return mst.iterator();
         }
-		return null;
-	}
+        return null;
+*/
+    }
 
     /*
      * Comparator used to order priority queue in order of edge weight.
      *
      */
-	private class EdgeComparator implements Comparator<E> {
-		@Override
-		public int compare(E o1, E o2) {
-			double val1 = o1.getWeight(), val2 = o2.getWeight();
-			if (val1 < val2)
-				return 1;
-			return val1 == val2 ? 0 : -1;
-		}
-	}
+    private class EdgeComparator implements Comparator<E> {
+        @Override
+        public int compare(E o1, E o2) {
+            double val1 = o1.getWeight(), val2 = o2.getWeight();
+            if (val1 > val2)
+                return 1;
+            return val1 == val2 ? 0 : -1;
+        }
+    }
 
 }
